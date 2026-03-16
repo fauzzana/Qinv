@@ -8,12 +8,20 @@ datasource db {
   directUrl = env("POSTGRES_URL_NON_POOLING")
 }
 
+enum Role {
+  ADMIN
+  MANAGEMENT
+  STAFF
+}
+
 model User {
   id            String   @id @default(cuid())
   name          String?
   email         String?  @unique
   emailVerified DateTime?
   image         String?
+
+  role      Role     @default(STAFF)
 
   userId    String?
   depart_id Int?
@@ -68,7 +76,6 @@ model VerificationToken {
 model Department {
   depart_id   Int    @id
   depart_name String
-  role        Int    @default(0)
 
   users User[]
 }

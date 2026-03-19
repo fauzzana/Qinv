@@ -9,7 +9,6 @@ import {
   GalleryVerticalEnd,
   Settings2,
   FileUser,
-  Icon,
   Package,
 } from "lucide-react"
 
@@ -25,6 +24,7 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar"
 import { url } from "inspector"
+import { is, tr } from "zod/v4/locales"
 
 // This is sample data.
 const data = {
@@ -53,7 +53,7 @@ const data = {
   projects: [
     {
       name: "Dashboard",
-      url: "#",
+      url: "/admin/dashboard",
       icon: House,
     }
   ],
@@ -66,15 +66,15 @@ const data = {
       items: [
         {
           title: "Status Users",
-          url: "#",
+          url: "/admin/userManagement/statusUsers",
         },
         {
           title: "Roles & Permissions",
-          url: "#",
+          url: "/admin/userManagement/permission",
         },
         {
           title: "Activity Logs",
-          url: "#",
+          url: "/admin/userManagement/activityLog",
         },
       ],
     },
@@ -82,18 +82,19 @@ const data = {
       title: "Asset Management",
       url: "#",
       icon: Boxes,
+      isActive: true,
       items: [
         {
           title: "Data Assets",
-          url: "#",
+          url: "/admin/assetManagement/dataAsset",
         },
         {
           title: "Scan",
-          url: "#",
+          url: "/admin/assetManagement/scanPage",
         },
         {
           title: "Reports Maintenance",
-          url: "#",
+          url: "/admin/assetManagement/assetMaintenance",
         },
       ],
     },
@@ -101,6 +102,7 @@ const data = {
       title: "Inventory Management",
       url: "#",
       icon: Package,
+      isActive: true,
       items: [
         {
           title: "Data Items",

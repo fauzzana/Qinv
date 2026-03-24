@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/breadcrumb";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { AssetTable } from "@/components/admin/UserManagement/AssetTable";
+import { AssetTable } from "@/components/asset/AssetTable";
 import { prisma } from "@/lib/prisma";
 
 async function getAssets() {

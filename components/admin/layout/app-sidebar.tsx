@@ -4,12 +4,12 @@ import * as React from "react"
 import {
   IconHelp,
   IconInnerShadowTop,
-  IconReport,
+  IconPackages,
   IconSearch,
   IconSettings,
   IconHome,
   IconUsers,
-  IconBox,
+  IconAsset,
   IconQrcode,
   IconLocation,
   IconCategory
@@ -70,16 +70,16 @@ const data = {
     {
       name: "Data Assets",
       url: "/admin/assetManagement/dataAsset",
-      icon: IconBox,
+      icon: IconAsset,
     },
     {
       name: "Data Items",
       url: "/admin/inventoryManagement/dataItem",
-      icon: IconReport,
+      icon: IconPackages,
     },
     {
       name: "Scan QR Code",
-      url: "/admin/assetManagement/scanPage",
+      url: "/admin/scan",
       icon: IconQrcode,
     },
   ],

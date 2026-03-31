@@ -9,17 +9,9 @@ import {
   KeyboardSensor,
   useSensor,
   useSensors,
-  type DragEndEvent,
   type UniqueIdentifier,
 } from "@dnd-kit/core"
 import { restrictToVerticalAxis } from "@dnd-kit/modifiers"
-import {
-  SortableContext,
-  useSortable,
-  verticalListSortingStrategy,
-  arrayMove,
-} from "@dnd-kit/sortable"
-import { CSS } from "@dnd-kit/utilities"
 
 import {
   Table,
@@ -46,7 +38,6 @@ import {
   type VisibilityState,
 } from "@tanstack/react-table"
 
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 
@@ -70,57 +61,33 @@ import {
 import { IconLayoutColumns, IconPlus, IconChevronDown, IconChevronsLeft, IconChevronLeft, IconChevronRight, IconChevronsRight } from "@tabler/icons-react"
 import { Label } from "@/components/ui/label"
 
+import { Tabs } from "@/components/ui/tabs"
+
 import {
-  Tabs
-} from "@/components/ui/tabs"
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@/components/ui/drawer"
 
 import { z } from "zod"
 import { useMediaQuery } from "@/hooks/use-media-query"
+import { handleEdit, handleDelete } from "./ActionLocation"
+import { AddLocationForm } from "./AddLocation"
 import {
-  MoreHorizontal,
   Search,
   Edit,
-  Trash2,
-  QrCode,
-  GripVertical,
+  Trash2
 } from "lucide-react"
 
 export const schema = z.object({
   location_id: z.string(),
   location_name: z.string(),
 })
-
-const columns: ColumnDef<z.infer<typeof schema>>[] = [
-  {
-    accessorKey: "location_id",
-    header: "Location ID",
-    cell: ({ row }) => <div className="font-medium">{row.getValue("location_id")}</div>,
-  },
-  {
-    accessorKey: "location_name",
-    header: "Location Name",
-    cell: ({ row }) => <div>{row.getValue("location_name")}</div>,
-  },
-  {
-    id: "actions",
-    header: "Actions",
-    cell: ({ row }) => {
-      return (
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon">
-            <Edit className="size-4" />
-            <span className="sr-only">Edit</span>
-          </Button>
-          <Button variant="ghost" size="icon">
-            <Trash2 className="size-4" />
-            <span className="sr-only">Delete</span>
-          </Button>
-        </div>
-      )
-    }
-  }
-]
-
 
 export function LocationTable({
   data: initialData,
@@ -140,6 +107,9 @@ export function LocationTable({
     pageIndex: 0,
     pageSize: 10,
   })
+  const [openAdd, setOpenAdd] = React.useState(false)
+  const [openEdit, setOpenEdit] = React.useState(false)
+  const [selectedLocation, setSelectedLocation] = React.useState<z.infer<typeof schema> | null>(null)
   const sortableId = React.useId()
   const sensors = useSensors(
     useSensor(MouseSensor, {}),
@@ -151,6 +121,52 @@ export function LocationTable({
     () => data?.map(({ location_id }) => location_id) || [],
     [data]
   )
+
+  const columns: ColumnDef<z.infer<typeof schema>>[] = React.useMemo(() => [
+    {
+      accessorKey: "location_id",
+      header: "Location ID",
+      cell: ({ row }) => <div className="font-medium">{row.getValue("location_id")}</div>,
+    },
+    {
+      accessorKey: "location_name",
+      header: "Location Name",
+      cell: ({ row }) => <div>{row.getValue("location_name")}</div>,
+    },
+    {
+      id: "actions",
+      header: "Actions",
+      cell: ({ row }) => {
+        const location = row.original
+        const deleteLocation = handleDelete(location.location_id)
+
+        return (
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => {
+                setSelectedLocation(location)
+                setOpenEdit(true)
+              }}
+            >
+              <Edit className="size-4" />
+              <span className="sr-only">Edit</span>
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={deleteLocation}
+            >
+              <Trash2 className="size-4" />
+              <span className="sr-only">Delete</span>
+            </Button>
+          </div>
+        )
+      }
+    }
+  ], [])
+
   const table = useReactTable({
     data,
     columns,
@@ -237,11 +253,30 @@ export function LocationTable({
                 })}
             </DropdownMenuContent>
           </DropdownMenu>
-          <Button variant="outline" size="sm">
-            <IconPlus />
-            <a href="/admin/location/add">Add Section</a>
-            {/* <span className="hidden lg:inline">Add Section</span> */}
-          </Button>
+          <Drawer open={openAdd} onOpenChange={setOpenAdd}>
+            <DrawerTrigger asChild>
+              <Button variant="outline" size="sm">
+                <IconPlus />
+                <span className="hidden lg:inline">Add Location</span>
+              </Button>
+            </DrawerTrigger>
+            <DrawerContent>
+              <DrawerHeader className="text-left">
+                <DrawerTitle>Add Location</DrawerTitle>
+                <DrawerDescription>
+                  Add a new location to the system.
+                </DrawerDescription>
+              </DrawerHeader>
+              <div className="px-4">
+                <AddLocationForm />
+              </div>
+              <DrawerFooter className="pt-2">
+                <DrawerClose asChild>
+                  <Button variant="outline">Cancel</Button>
+                </DrawerClose>
+              </DrawerFooter>
+            </DrawerContent>
+          </Drawer>
         </div>
         <div className="overflow-hidden rounded-lg border">
           <DndContext
@@ -375,6 +410,61 @@ export function LocationTable({
           </div>
         </div>
       </div>
+      <Drawer open={openEdit} onOpenChange={setOpenEdit}>
+        <DrawerContent>
+          <DrawerHeader className="text-left">
+            <DrawerTitle>Edit Location</DrawerTitle>
+            <DrawerDescription>
+              Update location information.
+            </DrawerDescription>
+          </DrawerHeader>
+          {selectedLocation && (
+            <form
+              onSubmit={(e) => {
+                e.preventDefault()
+                const formData = new FormData(e.currentTarget)
+                const edit = handleEdit(selectedLocation)
+                edit(formData)
+                setOpenEdit(false)
+              }}
+              className="px-4 space-y-4"
+            >
+              <div className="grid grid-cols-1 gap-4">
+                <div>
+                  <label htmlFor="location_id" className="text-sm font-medium">
+                    Location ID
+                  </label>
+                  <Input
+                    id="location_id"
+                    name="location_id"
+                    defaultValue={selectedLocation.location_id}
+                    disabled
+                    className="mt-1"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="location_name" className="text-sm font-medium">
+                    Location Name
+                  </label>
+                  <Input
+                    id="location_name"
+                    name="location_name"
+                    defaultValue={selectedLocation.location_name}
+                    className="mt-1"
+                    required
+                  />
+                </div>
+              </div>
+              <DrawerFooter className="pt-2">
+                <Button type="submit">Save Changes</Button>
+                <DrawerClose asChild>
+                  <Button variant="outline">Cancel</Button>
+                </DrawerClose>
+              </DrawerFooter>
+            </form>
+          )}
+        </DrawerContent>
+      </Drawer>
     </Tabs>
   )
 }

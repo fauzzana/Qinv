@@ -44,21 +44,9 @@ export async function POST(request: Request) {
     const data = await request.json()
     const { location_id, location_name } = data
 
-    if (!location_id) {
+    if (!location_id || !location_name) {
       return NextResponse.json(
-        { error: "asset_serial is required" },
-        { status: 400 }
-      )
-    }
-
-    const location =
-      location_id || ""
-        ? await prisma.location.findUnique({ where: { location_id: location_id } })
-        : await prisma.location.findFirst()
-
-    if (!location) {
-      return NextResponse.json(
-        { error: "Location not found. Please create a location first." },
+        { error: "location_id and location_name are required" },
         { status: 400 }
       )
     }
@@ -73,6 +61,75 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: true, data: newLocation })
   } catch (error) {
     console.error("Error creating location:", error)
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    )
+  }
+}
+
+export async function PATCH(request: Request) {
+  try {
+    const session = await auth()
+    if (!session?.user?.role || session.user.role !== "ADMIN") {
+      return NextResponse.json(
+        { error: "Unauthorized - Admin access required" },
+        { status: 403 }
+      )
+    }
+
+    const data = await request.json()
+    const { location_id, location_name } = data
+
+    if (!location_id) {
+      return NextResponse.json(
+        { error: "location_id is required" },
+        { status: 400 }
+      )
+    }
+
+    const updatedLocation = await prisma.location.update({
+      where: { location_id },
+      data: { location_name },
+    })
+
+    return NextResponse.json({ success: true, data: updatedLocation })
+  } catch (error) {
+    console.error("Error updating location:", error)
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    )
+  }
+}
+
+export async function DELETE(request: Request) {
+  try {
+    const session = await auth()
+    if (!session?.user?.role || session.user.role !== "ADMIN") {
+      return NextResponse.json(
+        { error: "Unauthorized - Admin access required" },
+        { status: 403 }
+      )
+    }
+
+    const data = await request.json()
+    const { location_id } = data
+
+    if (!location_id) {
+      return NextResponse.json(
+        { error: "location_id is required" },
+        { status: 400 }
+      )
+    }
+
+    await prisma.location.delete({
+      where: { location_id },
+    })
+
+    return NextResponse.json({ success: true, message: "Location deleted successfully" })
+  } catch (error) {
+    console.error("Error deleting location:", error)
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

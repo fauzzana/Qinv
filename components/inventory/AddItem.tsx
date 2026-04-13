@@ -49,6 +49,7 @@ export function AddItemForm() {
       status: "1",
       current_qty: 0,
       min_qty: 0,
+      image: "",
     },
   })
 
@@ -229,6 +230,35 @@ export function AddItemForm() {
                         <SelectItem value="2">Out of Stock</SelectItem>
                       </SelectContent>
                     </Select>
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                )}
+              />
+            </div>
+
+            <div className="p-2 mb-2">
+              <Controller
+                name="image"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel>Image</FieldLabel>
+                    <Input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0]
+                        if (file) {
+                          const reader = new FileReader()
+                          reader.onloadend = () => {
+                            field.onChange(reader.result)
+                          }
+                          reader.readAsDataURL(file)
+                        }
+                      }}
+                    />
                     {fieldState.invalid && (
                       <FieldError errors={[fieldState.error]} />
                     )}

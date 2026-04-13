@@ -102,6 +102,7 @@ model Item {
   category_id  String
   name         String
   status       Int
+  image        String?
   qr_code_path String
 
   category Category @relation(fields: [category_id], references: [category_id])

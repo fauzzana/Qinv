@@ -123,6 +123,7 @@ export const schema = z.object({
     location_name: z.string(),
   }),
   qr_code_path: z.string().nullable(),
+  image: z.string().nullable(),
 })
 
 const columns: ColumnDef<z.infer<typeof schema>>[] = [
@@ -154,6 +155,30 @@ const columns: ColumnDef<z.infer<typeof schema>>[] = [
         />
       </div>
     ),
+    enableSorting: false,
+    enableHiding: false,
+  },
+  {
+    id: "image",
+    header: "Image",
+    cell: ({ row }) => {
+      const image = row.original.image
+      return (
+        <div className="flex items-center justify-center">
+          {image ? (
+            <img
+              src={image}
+              alt={row.original.name || "Asset Image"}
+              className="h-12 w-12 rounded object-cover"
+            />
+          ) : (
+            <div className="h-12 w-12 rounded bg-muted flex items-center justify-center text-xs text-muted-foreground">
+              No Image
+            </div>
+          )}
+        </div>
+      )
+    },
     enableSorting: false,
     enableHiding: false,
   },
@@ -639,7 +664,7 @@ export function ItemTable({
             </DropdownMenuContent>
           </DropdownMenu>
           <Link href="/admin/inventoryManagement/addItem">
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" className="cursor-pointer">
               <IconPlus />
               <span className="hidden lg:inline">Add Item</span>
             </Button>

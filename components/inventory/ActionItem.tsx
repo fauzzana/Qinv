@@ -1,5 +1,3 @@
-"use client"
-
 import { toast } from "sonner"
 import { z } from "zod"
 
@@ -23,6 +21,7 @@ export type InsertFormData = {
   status: "1" | "2" | "3" | "4"
   current_qty?: number
   min_qty?: number
+  image?: string
 }
 
 export function handleInsert(formData: InsertFormData) {

@@ -54,6 +54,7 @@ async function getMaintenanceAssets() {
       attachment: m.attachment,
       create_at: m.create_at.toISOString(),
       date_end: m.date_end ? m.date_end.toISOString().split('T')[0] : null,
+      status_maintain: asset.maintenances[0]?.status_maintain,
     })),
   }))
 }

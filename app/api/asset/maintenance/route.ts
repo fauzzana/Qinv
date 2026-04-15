@@ -10,6 +10,7 @@ export async function POST(request: NextRequest) {
     const condition = formData.get("condition") as string;
     const note = formData.get("note") as string;
     const date_end = formData.get("date_end") as string;
+    const status_maintain = formData.get("status_maintain") as string;
     const file = formData.get("attachment") as File | null;
 
     if (!asset_serial || !condition || !note) {
@@ -76,6 +77,7 @@ export async function POST(request: NextRequest) {
         note,
         create_at: new Date(),
         date_end: date_end ? new Date(date_end) : null,
+        status_maintain: parseInt(status_maintain) || 0,
         attachment: attachmentPath,
       },
     });

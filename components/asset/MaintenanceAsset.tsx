@@ -57,6 +57,7 @@ const schema = z.object({
   condition: z.number(),
   note: z.string().min(1, "Note is required"),
   date_end: z.string().optional(),
+  status_maintain: z.number(),
   attachment: z.instanceof(File).optional(),
 })
 
@@ -105,11 +106,31 @@ const columns: ColumnDef<any>[] = [
     header: "Condition",
     cell: ({ row }) => {
       const condition = row.original.condition
-      if (condition === undefined || condition === null) {
-        return <Badge variant="outline">Unknown</Badge>
-      }
       return (
         <Badge variant={getConditionVariant(condition)}>{getConditionText(condition)}</Badge>
+      )
+    }
+  },
+  {
+    accessorKey: "status_maintain",
+    header: "Maintenance Status",
+    cell: ({ row }) => {
+      const dateEnd = row.original.maintenance?.[0]?.date_end
+      const statusMaintain = row.original.maintenance?.[0]?.status_maintain
+      const today = new Date()
+      today.setHours(0, 0, 0, 0)
+
+      let effectiveStatus = statusMaintain
+      if (dateEnd) {
+        const endDate = new Date(dateEnd)
+        endDate.setHours(0, 0, 0, 0)
+        if (endDate < today) {
+          effectiveStatus = 2 // Done
+        }
+      }
+
+      return (
+        <Badge variant={getStatusVariant(effectiveStatus || 1)}>{getStatusText(effectiveStatus || 1)}</Badge>
       )
     }
   },
@@ -155,11 +176,33 @@ const getConditionText = (condition: number) => {
   }
 }
 
+const getStatusVariant = (status: number) => {
+  switch (status) {
+    case 1:
+      return "destructive"
+    case 2:
+      return "link"
+    default:
+      return "outline"
+  }
+}
+
+const getStatusText = (status: number) => {
+  switch (status) {
+    case 1:
+      return "On Process"
+    case 2:
+      return "Done"
+    default: return `${status}`
+  }
+}
+
 export function MaintenanceAsset({ data }: MaintenanceAssetProps) {
   const [open, setOpen] = React.useState(false)
   const [formData, setFormData] = React.useState<Omit<MaintenanceForm, 'attachment'>>({
     asset_serial: "",
     condition: 1,
+    status_maintain: 1,
     note: "",
     date_end: "",
   })
@@ -199,6 +242,7 @@ export function MaintenanceAsset({ data }: MaintenanceAssetProps) {
         row.original.location?.location_name,
         row.original.condition,
         row.original.maintenance?.[0]?.date_end,
+        row.original.maintenance?.[0]?.status_maintain,
       ]
       return searchableFields
         .map((value) => String(value ?? "").toLowerCase())
@@ -215,6 +259,7 @@ export function MaintenanceAsset({ data }: MaintenanceAssetProps) {
       formDataToSend.append("condition", String(formData.condition))
       formDataToSend.append("note", formData.note)
       formDataToSend.append("date_end", formData.date_end || "")
+      formDataToSend.append("status_maintain", String(formData.status_maintain))
       if (attachment) {
         formDataToSend.append("attachment", attachment)
       }
@@ -238,6 +283,7 @@ export function MaintenanceAsset({ data }: MaintenanceAssetProps) {
         condition: 1,
         note: "",
         date_end: "",
+        status_maintain: 1,
       })
       setAttachment(undefined)
       window.location.reload()
@@ -334,6 +380,27 @@ export function MaintenanceAsset({ data }: MaintenanceAssetProps) {
                       <SelectItem value="1">Poor</SelectItem>
                       <SelectItem value="2">Okay</SelectItem>
                       <SelectItem value="3">Good</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label htmlFor="status_maintain">Maintenance Status</Label>
+                  <Select
+                    value={String(formData.status_maintain)}
+                    onValueChange={(value) =>
+                      setFormData({
+                        ...formData,
+                        status_maintain: parseInt(value),
+                      })
+                    }
+                  >
+                    <SelectTrigger id="status_maintain">
+                      <SelectValue placeholder="Select maintenance status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="1">On Process</SelectItem>
+                      <SelectItem value="2">Done</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

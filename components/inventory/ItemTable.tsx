@@ -168,7 +168,7 @@ const columns: ColumnDef<z.infer<typeof schema>>[] = [
           {image ? (
             <img
               src={image}
-              alt={row.original.name || "Asset Image"}
+              alt={row.original.name || "Item Image"}
               className="h-12 w-12 rounded object-cover"
             />
           ) : (

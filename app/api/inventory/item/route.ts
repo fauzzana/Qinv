@@ -68,7 +68,7 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json()
-    const { item_id, name, category_id, location_id, status, current_qty, min_qty } = body
+    const { item_id, name, category_id, location_id, status, current_qty, min_qty, image } = body
 
     if (!item_id) {
       return NextResponse.json(
@@ -108,6 +108,7 @@ export async function POST(request: Request) {
         category_id: category.category_id,
         location_id: location.location_id,
         status: Number(status ?? 1),
+        image: image || null,
         qr_code_path: "",
       },
     })

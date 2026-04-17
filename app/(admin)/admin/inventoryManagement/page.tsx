@@ -35,6 +35,7 @@ async function getItems() {
         },
       },
       qr_code_path: true,
+      image: true,
     },
     orderBy: {
       category_id: "desc",

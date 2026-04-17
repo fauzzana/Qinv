@@ -38,6 +38,7 @@ export function handleInsert(formData: InsertFormData) {
           status: Number(formData.status),
           current_qty: formData.current_qty ?? 0,
           min_qty: formData.min_qty ?? 0,
+          image: formData.image || null,
         }),
       })
 

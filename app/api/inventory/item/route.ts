@@ -68,7 +68,15 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json()
-    const { item_id, name, category_id, location_id, status, current_qty, min_qty, image } = body
+    const { 
+      item_id,
+      name,
+      category_id,
+      location_id,
+      status,
+      current_qty,
+      min_qty,
+      image } = body
 
     if (!item_id) {
       return NextResponse.json(
@@ -129,16 +137,7 @@ export async function POST(request: Request) {
       })
     }
 
-    const qrPayload = {
-      item_id: newItem.item_id,
-      name: newItem.name,
-      category_name: category.category_name,
-      location_name: location.location_name,
-      status: newItem.status,
-      current_qty: quantity,
-    }
-
-    const qrText = JSON.stringify(qrPayload)
+    const qrText = newItem.item_id
     const qrCodeDataUrl = await QRCode.toDataURL(qrText, {
       errorCorrectionLevel: "H",
       type: "image/png",

@@ -16,7 +16,7 @@ import { prisma } from "@/lib/prisma";
 async function getMaintenanceAssets() {
   const assets = await prisma.asset.findMany({
     where: {
-      status: 3, // Maintenance status
+      // status: 3, // Maintenance status
     },
     include: {
       category: true,
@@ -51,13 +51,15 @@ async function getMaintenanceAssets() {
     image: asset.image,
     condition: asset.maintenances[0]?.condition,
     maintenance: asset.maintenances.map(m => ({
+      maintenance_id: m.maintenance_id,
       attachment: m.attachment,
       create_at: m.create_at.toISOString(),
       date_end: m.date_end ? m.date_end.toISOString().split('T')[0] : null,
-      status_maintain: asset.maintenances[0]?.status_maintain,
+      status_maintain: m.status_maintain,
     })),
   }))
 }
+
 
 export default async function assetPage() {
   const session = await auth();

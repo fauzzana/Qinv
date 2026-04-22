@@ -150,6 +150,42 @@ const columns: ColumnDef<any>[] = [
       )
     },
   },
+  {
+    id: "actions",
+    header: "Actions",
+    cell: ({ row }) => {
+      const statusMaintain = row.original.maintenance?.[0]?.status_maintain
+      const maintenance_id = row.original.maintenance?.[0]?.maintenance_id
+      const asset_serial = row.original.asset_serial
+
+      return statusMaintain === 1 ? (
+        <div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              // Will be handled in component
+              (window as any).handleMarkAsDone?.(maintenance_id)
+            }}
+          >
+            Mark as Done
+          </Button>
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={() => {
+              // Will be handled in component
+              (window as any).handleDeleteMaintenance?.(maintenance_id, asset_serial)
+            }}
+          >
+            Delete
+          </Button>
+        </div>
+      ) : (
+        <span className="text-sm text-muted-foreground">-</span>
+      )
+    },
+  },
 ]
 
 const getConditionVariant = (condition: number) => {
@@ -213,9 +249,34 @@ export function MaintenanceAsset({ data }: MaintenanceAssetProps) {
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [pagination, setPagination] = React.useState({ pageIndex: 0, pageSize: 10 })
+  const [tableData, setTableData] = React.useState(data)
+
+  // Auto-update maintenance status when component mounts
+  React.useEffect(() => {
+    const autoUpdateMaintenanceStatus = async () => {
+      try {
+        const response = await fetch("/api/asset/maintenance", {
+          method: "PUT",
+        })
+
+        if (response.ok) {
+          const result = await response.json()
+          if (result.updated > 0) {
+            console.log(`Updated ${result.updated} maintenance record(s)`)
+            // Refresh table data
+            window.location.reload()
+          }
+        }
+      } catch (error) {
+        console.error("Error updating maintenance statuses:", error)
+      }
+    }
+
+    autoUpdateMaintenanceStatus()
+  }, [])
 
   const table = useReactTable({
-    data,
+    data: tableData,
     columns,
     state: {
       columnVisibility,
@@ -297,6 +358,80 @@ export function MaintenanceAsset({ data }: MaintenanceAssetProps) {
       setLoading(false)
     }
   }
+
+  // Handle manual mark as done
+  const handleMarkAsDone = async (maintenance_id: string) => {
+    try {
+      const response = await fetch("/api/asset/maintenance", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          maintenance_id,
+          status_maintain: 2,
+        }),
+      })
+
+      const result = await response.json()
+
+      if (!response.ok) {
+        toast.error(result.error || "Failed to update maintenance status")
+        return
+      }
+
+      toast.success("Maintenance marked as done successfully")
+      window.location.reload()
+    } catch (error) {
+      console.error("Error updating maintenance:", error)
+      toast.error("An error occurred while updating maintenance")
+    }
+  }
+
+  const handleDeleteMaintenance = async (maintenance_id: string, asset_serial: string) => {
+    try {
+      if (!confirm("Are you sure you want to delete this asset?")) {
+        return
+      }
+      const response = await fetch("/api/asset/maintenance", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          maintenance_id: maintenance_id,
+          asset_serial: asset_serial,
+        }),
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        toast.error(error.error || "Failed to delete asset")
+        return
+      }
+
+      toast.success("Asset deleted successfully")
+
+      // Refresh page untuk update data terbaru
+      window.location.reload()
+    } catch (error) {
+      console.error("Error deleting asset:", error)
+      toast.error("An error occurred while deleting the asset")
+    }
+  }
+
+
+
+  // Make function available globally for column cell
+  React.useEffect(() => {
+    (window as any).handleMarkAsDone = handleMarkAsDone
+  }
+    , [])
+  React.useEffect(() => {
+    (window as any).handleDeleteMaintenance = handleDeleteMaintenance
+  }
+    , [])
+
 
   return (
     <div className="w-full space-y-4">

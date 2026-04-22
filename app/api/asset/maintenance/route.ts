@@ -101,3 +101,156 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
+// PUT: Auto-update maintenance status when date_end has passed
+export async function PUT(request: NextRequest) {
+  try {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    // Find all maintenance records with date_end before today and status_maintain = 1
+    const expiredMaintenances = await prisma.assetMaintenance.findMany({
+      where: {
+        date_end: {
+          lt: today,
+        },
+        status_maintain: 1,
+      },
+    });
+
+    // Update each expired maintenance record
+    for (const maintenance of expiredMaintenances) {
+      // Update maintenance status to 2 (Done)
+      await prisma.assetMaintenance.update({
+        where: { maintenance_id: maintenance.maintenance_id },
+        data: { status_maintain: 2 },
+      });
+
+      // Update asset status to 1 (Available)
+      await prisma.asset.update({
+        where: { asset_serial: maintenance.asset_serial },
+        data: { status: 1},
+      });
+    }
+
+    return NextResponse.json({
+      success: true,
+      updated: expiredMaintenances.length,
+      message: `Updated ${expiredMaintenances.length} maintenance record(s)`,
+    });
+  } catch (error) {
+    console.error("Error updating maintenance statuses:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+
+// PATCH: Manual update maintenance status
+export async function PATCH(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const { maintenance_id, status_maintain } = body;
+
+    if (!maintenance_id) {
+      return NextResponse.json(
+        { error: "maintenance_id is required" },
+        { status: 400 }
+      );
+    }
+
+    // Get the maintenance record
+    const maintenance = await prisma.assetMaintenance.findUnique({
+      where: { maintenance_id },
+    });
+
+    if (!maintenance) {
+      return NextResponse.json(
+        { error: "Maintenance record not found" },
+        { status: 404 }
+      );
+    }
+
+    // Update maintenance status
+    const updatedMaintenance = await prisma.assetMaintenance.update({
+      where: { maintenance_id },
+      data: { status_maintain },
+    });
+
+    // If status_maintain is 2 (Done), update asset status to 1 (Available)
+    if (status_maintain === 2) {
+      await prisma.asset.update({
+        where: { asset_serial: maintenance.asset_serial },
+        data: { status: 1 },
+      });
+    }
+
+    return NextResponse.json({
+      success: true,
+      data: updatedMaintenance,
+      message: "Maintenance status updated successfully",
+    });
+  } catch (error) {
+    console.error("Error updating maintenance status:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+
+// DELETE: Delete maintenance record
+export async function DELETE(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const { maintenance_id, asset_serial } = body;
+
+    if (!maintenance_id || !asset_serial) {
+      return NextResponse.json(
+        { error: "maintenance_id and asset_serial are required" },
+        { status: 400 }
+      );
+    }
+
+    // Get the maintenance record
+    const maintenance = await prisma.assetMaintenance.findUnique({
+      where: { maintenance_id },
+    });
+
+    if (!maintenance) {
+      return NextResponse.json(
+        { error: "Maintenance record not found" },
+        { status: 404 }
+      );
+    }
+
+    // Delete maintenance record
+    await prisma.assetMaintenance.delete({
+      where: { maintenance_id },
+    });
+
+    // Update asset status back to available (1) if it was in maintenance (3)
+    const asset = await prisma.asset.findUnique({
+      where: { asset_serial },
+    });
+
+    if (asset && asset.status === 3) {
+      await prisma.asset.update({
+        where: { asset_serial },
+        data: { status: 1 },
+      });
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: "Maintenance record deleted successfully",
+    });
+  } catch (error) {
+    console.error("Error deleting maintenance:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}

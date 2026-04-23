@@ -208,75 +208,74 @@ export function CategoryTable({
       className="w-full flex-col justify-start gap-6"
     >
       <div className="space-y-4">
-        <div className="flex items-center gap-2">
-          <DropdownMenu>
-            <div className="flex gap-2">
-              <div className="relative max-w-sm w-full">
-                <Search className="absolute left-2 top-2.5 h-4 w-4" />
-                <Input
-                  className="pl-8"
-                  placeholder="Search..."
-                  value={globalFilter}
-                  onChange={(e) => setGlobalFilter(e.target.value)}
-                />
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-2">
+            <DropdownMenu>
+              <div className="flex gap-2">
+                <div className="relative max-w-sm w-full">
+                  <Search className="absolute left-2 top-2.5 h-4 w-4" />
+                  <Input
+                    className="pl-8"
+                    placeholder="Search..."
+                    value={globalFilter}
+                    onChange={(e) => setGlobalFilter(e.target.value)}
+                  />
+                </div>
               </div>
-            </div>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm">
-                <IconLayoutColumns />
-                <span className="hidden lg:inline">Customize Columns</span>
-                <span className="lg:hidden">Columns</span>
-                <IconChevronDown />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
-              {table
-                .getAllColumns()
-                .filter(
-                  (column) =>
-                    typeof column.accessorFn !== "undefined" &&
-                    column.getCanHide()
-                )
-                .map((column) => {
-                  return (
-                    <DropdownMenuCheckboxItem
-                      key={column.id}
-                      className="capitalize"
-                      checked={column.getIsVisible()}
-                      onCheckedChange={(value) =>
-                        column.toggleVisibility(!!value)
-                      }
-                    >
-                      {column.id}
-                    </DropdownMenuCheckboxItem>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm">
+                  <IconLayoutColumns />
+                  <span className="hidden lg:inline">Customize Columns</span>
+                  <span className="lg:hidden">Columns</span>
+                  <IconChevronDown />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                {table
+                  .getAllColumns()
+                  .filter(
+                    (column) =>
+                      typeof column.accessorFn !== "undefined" &&
+                      column.getCanHide()
                   )
-                })}
-            </DropdownMenuContent>
-          </DropdownMenu>
-          <Drawer open={openAdd} onOpenChange={setOpenAdd}>
-            <DrawerTrigger asChild>
-              <Button variant="outline" size="sm">
-                <IconPlus />
-                <span className="hidden lg:inline">Add Category</span>
-              </Button>
-            </DrawerTrigger>
-            <DrawerContent>
-              <DrawerHeader className="text-left">
-                <DrawerTitle>Add Category</DrawerTitle>
-                <DrawerDescription>
-                  Add a new category to the system.
-                </DrawerDescription>
-              </DrawerHeader>
-              <div className="px-4">
-                <AddCategoryForm />
-              </div>
-              <DrawerFooter className="pt-2">
-                <DrawerClose asChild>
-                  <Button variant="outline">Cancel</Button>
-                </DrawerClose>
-              </DrawerFooter>
-            </DrawerContent>
-          </Drawer>
+                  .map((column) => {
+                    return (
+                      <DropdownMenuCheckboxItem
+                        key={column.id}
+                        className="capitalize"
+                        checked={column.getIsVisible()}
+                        onCheckedChange={(value) =>
+                          column.toggleVisibility(!!value)
+                        }
+                      >
+                        {column.id}
+                      </DropdownMenuCheckboxItem>
+                    )
+                  })}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+          <div className="flex items-center gap-2">
+            <Drawer open={openAdd} onOpenChange={setOpenAdd}>
+              <DrawerTrigger asChild>
+                <Button variant="outline" size="sm">
+                  <IconPlus />
+                  <span className="hidden lg:inline">Add Category</span>
+                </Button>
+              </DrawerTrigger>
+              <DrawerContent>
+                <DrawerHeader className="text-left">
+                  <DrawerTitle>Add Category</DrawerTitle>
+                  <DrawerDescription>
+                    Add a new category to the system.
+                  </DrawerDescription>
+                </DrawerHeader>
+                <div className="px-4">
+                  <AddCategoryForm />
+                </div>
+              </DrawerContent>
+            </Drawer>
+          </div>
         </div>
         <div className="overflow-hidden rounded-lg border">
           <DndContext

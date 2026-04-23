@@ -17,6 +17,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { InputGroup, InputGroupTextarea } from "@/components/ui/input-group"
 import { handleInsert, type InsertFormData } from "./ActionCategory"
+import { DrawerFooter } from "@/components/ui/drawer"
 
 type FormData = InsertFormData;
 
@@ -86,12 +87,11 @@ export function AddCategoryForm() {
           </FieldError>
         </Field>
       </div>
-
-      <div className="flex justify-end gap-2">
+      <DrawerFooter>
         <Button type="submit" disabled={form.formState.isSubmitting}>
           {form.formState.isSubmitting ? "Adding..." : "Add Category"}
         </Button>
-      </div>
+      </DrawerFooter>
     </form>
   )
 }

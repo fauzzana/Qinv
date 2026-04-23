@@ -1,13 +1,10 @@
 "use client"
 
-import * as React from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Controller, useForm } from "react-hook-form"
-import { toast } from "sonner"
 import * as z from "zod"
 
 import { Button } from "@/components/ui/button"
-import { Separator } from "@/components/ui/separator"
 import {
   Field,
   FieldError,
@@ -15,8 +12,8 @@ import {
   FieldLabel,
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
-import { InputGroup, InputGroupTextarea } from "@/components/ui/input-group"
 import { handleInsert, type InsertFormData } from "./ActionLocation"
+import { DrawerFooter } from "@/components/ui/drawer"
 
 type FormData = InsertFormData;
 
@@ -86,12 +83,11 @@ export function AddLocationForm() {
           </FieldError>
         </Field>
       </div>
-
-      <div className="flex justify-end gap-2">
+      <DrawerFooter>
         <Button type="submit" disabled={form.formState.isSubmitting}>
           {form.formState.isSubmitting ? "Adding..." : "Add Location"}
         </Button>
-      </div>
+      </DrawerFooter>
     </form>
   )
 }

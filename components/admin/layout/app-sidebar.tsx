@@ -12,7 +12,8 @@ import {
   IconAsset,
   IconQrcode,
   IconLocation,
-  IconCategory
+  IconCategory,
+  IconFileDescription
 } from "@tabler/icons-react"
 
 import { NavMore } from "@/components/admin/layout/nav-more"
@@ -49,6 +50,11 @@ const data = {
       url: "/admin/userManagement/statusUsers",
       icon: IconUsers,
     },
+    {
+      title: "Reports",
+      url: "/admin/reports",
+      icon: IconFileDescription
+    }
   ],
   navSecondary: [
     {

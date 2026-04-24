@@ -47,7 +47,7 @@ const data = {
     },
     {
       title: "Users",
-      url: "/admin/userManagement/statusUsers",
+      url: "/admin/userManagement",
       icon: IconUsers,
     },
     {

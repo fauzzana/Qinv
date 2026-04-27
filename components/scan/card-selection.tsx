@@ -40,7 +40,7 @@ export function CardImage() {
   const handleItemScan = (result: string | null) => {
     if (result && result !== "undefined") {
       setIsItemDialogOpen(false)
-      router.push(`/admin/inventoryManagement/item/${encodeURIComponent(result)}`)
+      router.push(`/admin/inventoryManagement/${encodeURIComponent(result)}`)
       return
     }
 

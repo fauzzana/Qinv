@@ -74,7 +74,7 @@ model VerificationToken {
 }
 
 model Department {
-  depart_id   Int    @id
+  depart_id   Int    @id @default(autoincrement())
   depart_name String
 
   users User[]

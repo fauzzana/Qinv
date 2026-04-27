@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import Link from "next/link"
 import {
   closestCenter,
   DndContext,
@@ -88,7 +89,7 @@ import {
   GripVertical,
 } from "lucide-react"
 
-import { IconLayoutColumns, IconChevronDown, IconChevronsLeft, IconChevronLeft, IconChevronRight, IconChevronsRight } from "@tabler/icons-react"
+import { IconLayoutColumns, IconChevronDown, IconChevronsLeft, IconChevronLeft, IconChevronRight, IconChevronsRight, IconPlus } from "@tabler/icons-react"
 import { Label } from "@/components/ui/label"
 
 import {
@@ -278,7 +279,7 @@ export function UserTable({ data: initialData }: { data: z.infer<typeof schema>[
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <Dialog open={openEdit} onOpenChange={setOpenEdit}>
-                  {/* ttombol edit */}
+                  {/* tombol edit */}
                   <DialogTrigger asChild>
                     <DropdownMenuItem onSelect={(event) => event.preventDefault()}>
                       <Edit className="mr-2 h-4 w-4" /> Edit
@@ -426,87 +427,98 @@ export function UserTable({ data: initialData }: { data: z.infer<typeof schema>[
       className="w-full flex-col justify-start gap-6"
     >
       <div className="space-y-4">
-        <div className="flex items-center gap-2">
-          <DropdownMenu>
-            <div className="flex gap-2">
-              <div className="relative max-w-sm w-full">
-                <Search className="absolute left-2 top-2.5 h-4 w-4" />
-                <Input
-                  className="pl-8"
-                  placeholder="Search..."
-                  value={globalFilter}
-                  onChange={(e) => setGlobalFilter(e.target.value)}
-                />
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-2">
+            <DropdownMenu>
+              <div className="flex gap-2">
+                <div className="relative max-w-sm w-full">
+                  <Search className="absolute left-2 top-2.5 h-4 w-4" />
+                  <Input
+                    className="pl-8"
+                    placeholder="Search..."
+                    value={globalFilter}
+                    onChange={(e) => setGlobalFilter(e.target.value)}
+                  />
+                </div>
               </div>
-            </div>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm">
-                <IconLayoutColumns />
-                <span className="hidden lg:inline">Customize Columns</span>
-                <span className="lg:hidden">Columns</span>
-                <IconChevronDown />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
-              {table
-                .getAllColumns()
-                .filter(
-                  (column) =>
-                    typeof column.accessorFn !== "undefined" &&
-                    column.getCanHide()
-                )
-                .map((column) => {
-                  return (
-                    <DropdownMenuCheckboxItem
-                      key={column.id}
-                      className="capitalize"
-                      checked={column.getIsVisible()}
-                      onCheckedChange={(value) =>
-                        column.toggleVisibility(!!value)
-                      }
-                    >
-                      {column.id}
-                    </DropdownMenuCheckboxItem>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm">
+                  <IconLayoutColumns />
+                  <span className="hidden lg:inline">Customize Columns</span>
+                  <span className="lg:hidden">Columns</span>
+                  <IconChevronDown />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                {table
+                  .getAllColumns()
+                  .filter(
+                    (column) =>
+                      typeof column.accessorFn !== "undefined" &&
+                      column.getCanHide()
                   )
-                })}
-            </DropdownMenuContent>
-          </DropdownMenu>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm">
-                <span className="hidden lg:inline">Filter by Role</span>
-                <span className="lg:hidden">Role</span>
-                <IconChevronDown />
+                  .map((column) => {
+                    return (
+                      <DropdownMenuCheckboxItem
+                        key={column.id}
+                        className="capitalize"
+                        checked={column.getIsVisible()}
+                        onCheckedChange={(value) =>
+                          column.toggleVisibility(!!value)
+                        }
+                      >
+                        {column.id}
+                      </DropdownMenuCheckboxItem>
+                    )
+                  })}
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm">
+                  <span className="hidden lg:inline">Filter by Role</span>
+                  <span className="lg:hidden">Role</span>
+                  <IconChevronDown />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuItem onSelect={() => {
+                  setRoleFilter("all")
+                  table.setColumnFilters([])
+                }}>
+                  All
+                </DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => {
+                  setRoleFilter("ADMIN")
+                  table.setColumnFilters([{ id: "role", value: "ADMIN" }])
+                }}>
+                  Admin
+                </DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => {
+                  setRoleFilter("MANAGEMENT")
+                  table.setColumnFilters([{ id: "role", value: "MANAGEMENT" }])
+                }}>
+                  Management
+                </DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => {
+                  setRoleFilter("STAFF")
+                  table.setColumnFilters([{ id: "role", value: "STAFF" }])
+                }}>
+                  Staff
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+          <div className="flex items-center gap-2">
+            <Link href="/admin/userManagement/department">
+              <Button variant="outline" size="sm" className="cursor-pointer">
+                <IconPlus />
+                <span className="hidden lg:inline">Departments</span>
               </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuItem onSelect={() => {
-                setRoleFilter("all")
-                table.setColumnFilters([])
-              }}>
-                All
-              </DropdownMenuItem>
-              <DropdownMenuItem onSelect={() => {
-                setRoleFilter("ADMIN")
-                table.setColumnFilters([{ id: "role", value: "ADMIN" }])
-              }}>
-                Admin
-              </DropdownMenuItem>
-              <DropdownMenuItem onSelect={() => {
-                setRoleFilter("MANAGEMENT")
-                table.setColumnFilters([{ id: "role", value: "MANAGEMENT" }])
-              }}>
-                Management
-              </DropdownMenuItem>
-              <DropdownMenuItem onSelect={() => {
-                setRoleFilter("STAFF")
-                table.setColumnFilters([{ id: "role", value: "STAFF" }])
-              }}>
-                Staff
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+            </Link>
+          </div>
         </div>
+
         <div className="overflow-hidden rounded-lg border">
           <DndContext
             collisionDetection={closestCenter}

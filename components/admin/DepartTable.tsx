@@ -76,8 +76,8 @@ import {
 
 import { z } from "zod"
 import { useMediaQuery } from "@/hooks/use-media-query"
-import { handleEdit, handleDelete } from "./ActionCategory"
-import { AddCategoryForm } from "./AddCategory"
+import { handleEdit, handleDelete } from "./ActionDepart"
+import { AddDepartForm } from "./AddDepart"
 import {
   Search,
   Edit,
@@ -85,11 +85,11 @@ import {
 } from "lucide-react"
 
 export const schema = z.object({
-  category_id: z.string(),
-  category_name: z.string(),
+  depart_id: z.number(),
+  depart_name: z.string(),
 })
 
-export function CategoryTable({
+export function DepartmentTable({
   data: initialData,
 }: {
   data: z.infer<typeof schema>[]
@@ -109,7 +109,7 @@ export function CategoryTable({
   })
   const [openAdd, setOpenAdd] = React.useState(false)
   const [openEdit, setOpenEdit] = React.useState(false)
-  const [selectedCategory, setSelectedCategory] = React.useState<z.infer<typeof schema> | null>(null)
+  const [selectedDepartment, setSelectedDepartment] = React.useState<z.infer<typeof schema> | null>(null)
   const sortableId = React.useId()
   const sensors = useSensors(
     useSensor(MouseSensor, {}),
@@ -117,28 +117,23 @@ export function CategoryTable({
     useSensor(KeyboardSensor, {})
   )
 
-  const dataIds = React.useMemo<UniqueIdentifier[]>(
-    () => data?.map(({ category_id }) => category_id) || [],
-    [data]
-  )
-
   const columns: ColumnDef<z.infer<typeof schema>>[] = React.useMemo(() => [
     {
-      accessorKey: "category_id",
-      header: "Category ID",
-      cell: ({ row }) => <div className="font-medium">{row.getValue("category_id")}</div>,
+      accessorKey: "depart_id",
+      header: "Department ID",
+      cell: ({ row }) => <div className="font-medium">{row.getValue("depart_id")}</div>,
     },
     {
-      accessorKey: "category_name",
-      header: "Category Name",
-      cell: ({ row }) => <div>{row.getValue("category_name")}</div>,
+      accessorKey: "depart_name",
+      header: "Department Name",
+      cell: ({ row }) => <div>{row.getValue("depart_name")}</div>,
     },
     {
       id: "actions",
       header: "Actions",
       cell: ({ row }) => {
-        const category = row.original
-        const deleteCategory = handleDelete(category.category_id)
+        const department = row.original
+        const deleteDepartment = handleDelete(department.depart_id)
 
         return (
           <div className="flex items-center gap-2">
@@ -146,7 +141,7 @@ export function CategoryTable({
               variant="ghost"
               size="icon"
               onClick={() => {
-                setSelectedCategory(category)
+                setSelectedDepartment(department)
                 setOpenEdit(true)
               }}
             >
@@ -156,7 +151,7 @@ export function CategoryTable({
             <Button
               variant="ghost"
               size="icon"
-              onClick={deleteCategory}
+              onClick={deleteDepartment}
             >
               <Trash2 className="size-4" />
               <span className="sr-only">Delete</span>
@@ -178,7 +173,7 @@ export function CategoryTable({
       pagination,
       globalFilter,
     },
-    getRowId: (row) => row.category_id.toString(),
+    getRowId: (row) => row.depart_id.toString(),
     enableRowSelection: true,
     onRowSelectionChange: setRowSelection,
     onSortingChange: setSorting,
@@ -193,15 +188,14 @@ export function CategoryTable({
     getFacetedRowModel: getFacetedRowModel(),
     getFacetedUniqueValues: getFacetedUniqueValues(),
     globalFilterFn: (row, filterValue) => {
-      const category = row.original
+      const department = row.original
       const search = filterValue.toLowerCase()
       return (
-        category.category_id?.toLowerCase().includes(search) ||
-        category.category_name?.toLowerCase().includes(search)
+        department.depart_id?.toString().includes(search) ||
+        department.depart_name?.toLowerCase().includes(search)
       )
     },
   })
-
   return (
     <Tabs
       defaultValue="outline"
@@ -260,18 +254,18 @@ export function CategoryTable({
               <DrawerTrigger asChild>
                 <Button variant="outline" size="sm">
                   <IconPlus />
-                  <span className="hidden lg:inline">Add Category</span>
+                  <span className="hidden lg:inline">Add Department</span>
                 </Button>
               </DrawerTrigger>
               <DrawerContent>
                 <DrawerHeader className="text-left">
-                  <DrawerTitle>Add Category</DrawerTitle>
+                  <DrawerTitle>Add Department</DrawerTitle>
                   <DrawerDescription>
-                    Add a new category to the system.
+                    Add a new department to the system.
                   </DrawerDescription>
                 </DrawerHeader>
                 <div className="px-4">
-                  <AddCategoryForm />
+                  <AddDepartForm />
                 </div>
               </DrawerContent>
             </Drawer>
@@ -411,17 +405,17 @@ export function CategoryTable({
       <Drawer open={openEdit} onOpenChange={setOpenEdit}>
         <DrawerContent>
           <DrawerHeader className="text-left">
-            <DrawerTitle>Edit Category</DrawerTitle>
+            <DrawerTitle>Edit Department</DrawerTitle>
             <DrawerDescription>
-              Update category information.
+              Update department information.
             </DrawerDescription>
           </DrawerHeader>
-          {selectedCategory && (
+          {selectedDepartment && (
             <form
               onSubmit={(e) => {
                 e.preventDefault()
                 const formData = new FormData(e.currentTarget)
-                const edit = handleEdit(selectedCategory)
+                const edit = handleEdit(selectedDepartment)
                 edit(formData)
                 setOpenEdit(false)
               }}
@@ -429,25 +423,25 @@ export function CategoryTable({
             >
               <div className="grid grid-cols-1 gap-4">
                 <div>
-                  <label htmlFor="category_id" className="text-sm font-medium">
-                    Category ID
+                  <label htmlFor="department_id" className="text-sm font-medium">
+                    Department ID
                   </label>
                   <Input
-                    id="category_id"
-                    name="category_id"
-                    defaultValue={selectedCategory.category_id}
+                    id="department_id"
+                    name="department_id"
+                    defaultValue={selectedDepartment.depart_id}
                     disabled
                     className="mt-1"
                   />
                 </div>
                 <div>
-                  <label htmlFor="category_name" className="text-sm font-medium">
-                    Category Name
+                  <label htmlFor="department_name" className="text-sm font-medium">
+                    Department Name
                   </label>
                   <Input
-                    id="category_name"
-                    name="category_name"
-                    defaultValue={selectedCategory.category_name}
+                    id="department_name"
+                    name="department_name"
+                    defaultValue={selectedDepartment.depart_name}
                     className="mt-1"
                     required
                   />
@@ -465,4 +459,5 @@ export function CategoryTable({
       </Drawer>
     </Tabs>
   )
+
 }

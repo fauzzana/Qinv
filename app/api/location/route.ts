@@ -42,14 +42,26 @@ export async function POST(request: Request) {
     }
 
     const data = await request.json()
-    const { location_id, location_name } = data
+    const { location_name } = data
 
-    if (!location_id || !location_name) {
+    if (!location_name) {
       return NextResponse.json(
-        { error: "location_id and location_name are required" },
+        { error: "location_name is required" },
         { status: 400 }
       )
     }
+
+    const locations = await prisma.location.findMany({
+      select: { location_id: true },
+    })
+
+    const nextNumber = locations.reduce((max, location) => {
+      const match = location.location_id.match(/^loc(\d+)$/i)
+      if (!match) return max
+      return Math.max(max, parseInt(match[1], 10))
+    }, 0) + 1
+
+    const location_id = `loc${String(nextNumber).padStart(3, "0")}`
 
     const newLocation = await prisma.location.create({
       data: {

@@ -18,7 +18,6 @@ import { DrawerFooter } from "@/components/ui/drawer"
 type FormData = InsertFormData;
 
 const formSchema = z.object({
-  location_id: z.string().min(1, "Location ID is required"),
   location_name: z.string().min(1, "Location name is required"),
 }) satisfies z.ZodType<FormData>;
 
@@ -26,7 +25,6 @@ export function AddLocationForm() {
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      location_id: "",
       location_name: "",
     },
   })
@@ -43,26 +41,6 @@ export function AddLocationForm() {
   return (
     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
       <div className="grid grid-cols-1 gap-4">
-        <Field>
-          <FieldLabel>Location ID</FieldLabel>
-          <FieldGroup>
-            <Controller
-              name="location_id"
-              control={form.control}
-              render={({ field }) => (
-                <Input
-                  {...field}
-                  placeholder="Enter location ID"
-                  className="w-full"
-                />
-              )}
-            />
-          </FieldGroup>
-          <FieldError>
-            {form.formState.errors.location_id?.message}
-          </FieldError>
-        </Field>
-
         <Field>
           <FieldLabel>Location Name</FieldLabel>
           <FieldGroup>

@@ -9,7 +9,6 @@ const schema = z.object({
 type Category = z.infer<typeof schema>
 
 export type InsertFormData = {
-  category_id: string;
   category_name: string;
 };
 
@@ -20,7 +19,6 @@ export function handleInsert(formData: InsertFormData) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          category_id: formData.category_id,
           category_name: formData.category_name,
         }),
       })

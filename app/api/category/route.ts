@@ -42,14 +42,26 @@ export async function POST(request: Request) {
     }
 
     const data = await request.json()
-    const { category_id, category_name } = data
+    const { category_name } = data
 
-    if (!category_id || !category_name) {
+    if (!category_name) {
       return NextResponse.json(
-        { error: "category_id and category_name are required" },
+        { error: "category_name is required" },
         { status: 400 }
       )
     }
+
+    const categories = await prisma.category.findMany({
+      select: { category_id: true },
+    })
+
+    const nextNumber = categories.reduce((max, category) => {
+      const match = category.category_id.match(/^cat(\d+)$/i)
+      if (!match) return max
+      return Math.max(max, parseInt(match[1], 10))
+    }, 0) + 1
+
+    const category_id = `cat${String(nextNumber).padStart(3, "0")}`
 
     const newCategory = await prisma.category.create({
       data: {

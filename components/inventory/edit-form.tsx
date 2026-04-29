@@ -1,4 +1,4 @@
-import React from "react"
+import React, { useEffect, useState } from "react"
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { Drawer, DrawerTrigger, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription, DrawerFooter, DrawerClose } from "@/components/ui/drawer"
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu"
@@ -9,9 +9,53 @@ import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@
 import { Edit } from "lucide-react"
 import { useItemActions } from "@/hooks/useItemActions"
 
+interface Category {
+  category_id: string
+  category_name: string
+}
+
+interface Location {
+  location_id: string
+  location_name: string
+}
+
 export function EditDialog({ item }: any) {
   const { performEdit, isEditing } = useItemActions(item)
   const [openEdit, setOpenEdit] = React.useState(false)
+  const [categories, setCategories] = useState<Category[]>([])
+  const [locations, setLocations] = useState<Location[]>([])
+
+  // State untuk form fields
+  const [name, setName] = useState(item.name || "")
+  const [categoryId, setCategoryId] = useState(item.category?.category_id || "")
+  const [locationId, setLocationId] = useState(item.location?.location_id || "")
+  const [minQty, setMinQty] = useState(item.min_qty || 0)
+  const [status, setStatus] = useState(item.status.toString())
+
+  useEffect(() => {
+    async function loadOptions() {
+      try {
+        const [categoryRes, locationRes] = await Promise.all([
+          fetch("/api/category"),
+          fetch("/api/location"),
+        ])
+
+        if (categoryRes.ok) {
+          const data = await categoryRes.json()
+          setCategories(data.data || [])
+        }
+
+        if (locationRes.ok) {
+          const data = await locationRes.json()
+          setLocations(data.data || [])
+        }
+      } catch (error) {
+        console.error("Error loading category/location", error)
+      }
+    }
+
+    loadOptions()
+  }, [])
 
   return (
     <Dialog open={openEdit} onOpenChange={setOpenEdit}>
@@ -34,11 +78,45 @@ export function EditDialog({ item }: any) {
           </div>
           <div>
             <Label>Name</Label>
-            <Input name="name" defaultValue={item.name || ""} className="mt-1" />
+            <Input value={name} onChange={(e) => setName(e.target.value)} className="mt-1" />
+          </div>
+          <div>
+            <Label>Category</Label>
+            <Select value={categoryId} onValueChange={setCategoryId}>
+              <SelectTrigger className="mt-1">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {categories.map((category) => (
+                  <SelectItem key={category.category_id} value={category.category_id}>
+                    {category.category_name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label>Location</Label>
+            <Select value={locationId} onValueChange={setLocationId}>
+              <SelectTrigger className="mt-1">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {locations.map((location) => (
+                  <SelectItem key={location.location_id} value={location.location_id}>
+                    {location.location_name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label>Minimum Quantity</Label>
+            <Input type="number" value={minQty} onChange={(e) => setMinQty(Number(e.target.value))} className="mt-1" />
           </div>
           <div>
             <Label>Status</Label>
-            <select name="status" defaultValue={item.status} className="mt-1 block w-full rounded border p-2">
+            <select value={status} onChange={(e) => setStatus(e.target.value)} className="mt-1 block w-full rounded border p-2">
               <option value="1">Available</option>
               <option value="2">Out of Stock</option>
             </select>
@@ -46,19 +124,22 @@ export function EditDialog({ item }: any) {
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => setOpenEdit(false)}>Cancel</Button>
-          <Button onClick={async (e) => {
-            const dialogContent = (e.currentTarget as HTMLElement).closest('[role="dialog"]');
-            if (dialogContent) {
-              const nameInput = dialogContent.querySelector('input[name="name"]') as HTMLInputElement;
-              const statusSelect = dialogContent.querySelector('select[name="status"]') as HTMLSelectElement;
-
-              const formData = new FormData();
-              formData.set("name", nameInput?.value || "");
-              formData.set("status", statusSelect?.value || item.status.toString());
-
-              await performEdit(formData);
-              setOpenEdit(false);
+          <Button onClick={async () => {
+            const formData = new FormData();
+            formData.set("name", name || "");
+            formData.set("status", status);
+            if (categoryId) {
+              formData.set("category_id", categoryId);
             }
+            if (locationId) {
+              formData.set("location_id", locationId);
+            }
+            if (minQty) {
+              formData.set("min_qty", minQty.toString());
+            }
+
+            await performEdit(formData);
+            setOpenEdit(false);
           }}
           >
             {isEditing ? "Saving..." : "Save Changes"}
@@ -72,6 +153,40 @@ export function EditDialog({ item }: any) {
 export function EditDrawer({ item }: any) {
   const { performEdit, isEditing } = useItemActions(item)
   const [openEdit, setOpenEdit] = React.useState(false)
+  const [categories, setCategories] = useState<Category[]>([])
+  const [locations, setLocations] = useState<Location[]>([])
+
+  // State untuk form fields
+  const [name, setName] = useState(item.name || "")
+  const [categoryId, setCategoryId] = useState(item.category?.category_id || "")
+  const [locationId, setLocationId] = useState(item.location?.location_id || "")
+  const [minQty, setMinQty] = useState(item.min_qty || 0)
+  const [status, setStatus] = useState(item.status.toString())
+
+  useEffect(() => {
+    async function loadOptions() {
+      try {
+        const [categoryRes, locationRes] = await Promise.all([
+          fetch("/api/category"),
+          fetch("/api/location"),
+        ])
+
+        if (categoryRes.ok) {
+          const data = await categoryRes.json()
+          setCategories(data.data || [])
+        }
+
+        if (locationRes.ok) {
+          const data = await locationRes.json()
+          setLocations(data.data || [])
+        }
+      } catch (error) {
+        console.error("Error loading category/location", error)
+      }
+    }
+
+    loadOptions()
+  }, [])
   return (
     <Drawer open={openEdit} onOpenChange={setOpenEdit}>
       {/* tombol edit */}
@@ -93,30 +208,67 @@ export function EditDrawer({ item }: any) {
           </div>
           <div>
             <Label>Name</Label>
-            <Input name="name" defaultValue={item.name || ""} className="mt-1" />
+            <Input value={name} onChange={(e) => setName(e.target.value)} className="mt-1" />
+          </div>
+          <div>
+            <Label>Category</Label>
+            <Select value={categoryId} onValueChange={setCategoryId}>
+              <SelectTrigger className="mt-1">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {categories.map((category) => (
+                  <SelectItem key={category.category_id} value={category.category_id}>
+                    {category.category_name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label>Location</Label>
+            <Select value={locationId} onValueChange={setLocationId}>
+              <SelectTrigger className="mt-1">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {locations.map((location) => (
+                  <SelectItem key={location.location_id} value={location.location_id}>
+                    {location.location_name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label>Minimum Quantity</Label>
+            <Input type="number" value={minQty} onChange={(e) => setMinQty(Number(e.target.value))} className="mt-1" />
           </div>
           <div>
             <Label>Status</Label>
-            <select name="status" defaultValue={item.status} className="mt-1 block w-full rounded border p-2">
+            <select value={status} onChange={(e) => setStatus(e.target.value)} className="mt-1 block w-full rounded border p-2">
               <option value="1">Available</option>
               <option value="2">Out of Stock</option>
             </select>
           </div>
         </div>
         <DrawerFooter className="pt-2">
-          <Button onClick={async (e) => {
-            const drawerContent = (e.currentTarget as HTMLElement).closest('[role="dialog"]');
-            if (drawerContent) {
-              const nameInput = drawerContent.querySelector('input[name="name"]') as HTMLInputElement;
-              const statusSelect = drawerContent.querySelector('select[name="status"]') as HTMLSelectElement;
-
-              const formData = new FormData();
-              formData.set("name", nameInput?.value || "");
-              formData.set("status", statusSelect?.value || item.status.toString());
-
-              await performEdit(formData);
-              setOpenEdit(false);
+          <Button onClick={async () => {
+            const formData = new FormData();
+            formData.set("name", name || "");
+            formData.set("status", status);
+            if (categoryId) {
+              formData.set("category_id", categoryId);
             }
+            if (locationId) {
+              formData.set("location_id", locationId);
+            }
+            if (minQty) {
+              formData.set("min_qty", minQty.toString());
+            }
+
+            await performEdit(formData);
+            setOpenEdit(false);
           }}>Save Changes</Button>
           <DrawerClose asChild>
             <Button variant="outline">Cancel</Button>

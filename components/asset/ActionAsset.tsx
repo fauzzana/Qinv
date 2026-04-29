@@ -102,6 +102,16 @@ export function handleEdit(asset: Asset) {
           purcase_price: asset.purcase_price,
           status: Number(formData.get("status")) || asset.status,
         }
+
+        // Add category_id if provided
+        if (formData.get("category_id")) {
+          updateData.category_id = formData.get("category_id")
+        }
+
+        // Add location_id if provided
+        if (formData.get("location_id")) {
+          updateData.location_id = formData.get("location_id")
+        }
       }
 
       const response = await fetch("/api/asset/detail", {

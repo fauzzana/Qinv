@@ -82,6 +82,21 @@ export function handleEdit(item: Item) {
           name: (formData.get("name") as string) || item.name,
           status: Number(formData.get("status") || item.status),
         }
+
+        // Add category_id if provided
+        if (formData.get("category_id")) {
+          updateData.category_id = formData.get("category_id")
+        }
+
+        // Add location_id if provided
+        if (formData.get("location_id")) {
+          updateData.location_id = formData.get("location_id")
+        }
+
+        // Add min_qty if provided
+        if (formData.get("min_qty")) {
+          updateData.min_qty = Number(formData.get("min_qty"))
+        }
       }
 
       const response = await fetch("/api/inventory/item", {

@@ -31,8 +31,8 @@ const chartConfig = {
     label: "Maintenance",
     color: "var(--chart-3)",
   },
-  damaged: {
-    label: "Damaged",
+  un_use: {
+    label: "Un Use",
     color: "var(--chart-4)",
   },
   other: {
@@ -43,10 +43,10 @@ const chartConfig = {
 
 function getStatusLabel(status: number) {
   switch (status) {
-    case 0: return "available";
-    case 1: return "in_use";
-    case 2: return "maintenance";
-    case 3: return "damaged";
+    case 1: return "available";
+    case 2: return "in_use";
+    case 3: return "maintenance";
+    case 4: return "un_use";
     default: return "other";
   }
 }

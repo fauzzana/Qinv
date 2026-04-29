@@ -21,6 +21,7 @@ import {
 export function AssetEditForm({ asset }: any) {
   const { performDelete, performQr, isDeleting } = useAssetActions(asset)
   const [openQr, setOpenQr] = React.useState(false)
+  const [openMaintenance, setOpenMaintenance] = React.useState(false)
   const isDesktop = useMediaQuery("(min-width: 768px)")
   const qrRef = useRef<HTMLDivElement>(null)
   const handlePrint = useReactToPrint({
@@ -76,16 +77,27 @@ export function AssetEditForm({ asset }: any) {
                   </div>
                 </div>
               </DialogHeader>
-              {/* <div className="flex gap-2"> */}
               <Button variant="default" onClick={handlePrint}>Print</Button>
               <Button variant="destructive" onClick={() => setOpenQr(false)}>Close</Button>
-              {/* </div> */}
             </DialogContent>
           </Dialog>
           <DropdownMenuSeparator />
           {/* tombol request maintenance */}
-          <DropdownMenuItem onClick={() => alert("Request maintenance feature coming soon!")} onSelect={(event) => event.preventDefault()}>
-            <Wrench className="mr-2 h-4 w-4" />Maintain</DropdownMenuItem>
+          <Dialog open={openMaintenance} onOpenChange={setOpenMaintenance}>
+            <DialogTrigger asChild>
+              <DropdownMenuItem onSelect={(event) => event.preventDefault()}>
+                <Wrench className="mr-2 h-4 w-4" />Maintenance
+              </DropdownMenuItem>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Maintenance</DialogTitle>
+              </DialogHeader>
+              <p className="text-sm text-muted-foreground">
+                Maintenance form is not available in this menu yet.
+              </p>
+            </DialogContent>
+          </Dialog>
           {/* tombol delete */}
           <DropdownMenuItem
             variant="destructive"

@@ -51,7 +51,7 @@ export default async function statusDepartmentsPage() {
               </BreadcrumbItem>
               <BreadcrumbSeparator />
               <BreadcrumbItem>
-                <BreadcrumbLink href="/admin/dashboard/userManagement">User Management</BreadcrumbLink>
+                <BreadcrumbLink href="/admin/userManagement">User Management</BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator />
               <BreadcrumbItem>

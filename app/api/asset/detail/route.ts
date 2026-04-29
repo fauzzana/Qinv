@@ -183,6 +183,8 @@ export async function PATCH(request: Request) {
       purcase_date,
       purcase_price,
       status,
+      category_id,
+      location_id,
       image,
     } = body
 
@@ -193,21 +195,25 @@ export async function PATCH(request: Request) {
       )
     }
 
+    const updatePayload: Record<string, any> = {
+      ...(name !== undefined ? { name } : {}),
+      ...(description !== undefined ? { description } : {}),
+      ...(qty !== undefined ? { qty: Number(qty) } : {}),
+      ...(purcase_date !== undefined
+        ? { purcase_date: new Date(purcase_date) }
+        : {}),
+      ...(purcase_price !== undefined
+        ? { purcase_price: purcase_price === null ? null : Number(purcase_price) }
+        : {}),
+      ...(status !== undefined ? { status: Number(status) } : {}),
+      ...(image !== undefined ? { image } : {}),
+      ...(category_id !== undefined ? { category_id } : {}),
+      ...(location_id !== undefined ? { location_id } : {}),
+    }
+
     const updatedAsset = await prisma.asset.update({
       where: { asset_serial },
-      data: {
-        ...(name !== undefined ? { name } : {}),
-        ...(description !== undefined ? { description } : {}),
-        ...(qty !== undefined ? { qty: Number(qty) } : {}),
-        ...(purcase_date !== undefined
-          ? { purcase_date: new Date(purcase_date) }
-          : {}),
-        ...(purcase_price !== undefined
-          ? { purcase_price: purcase_price === null ? null : Number(purcase_price) }
-          : {}),
-        ...(status !== undefined ? { status: Number(status) } : {}),
-        ...(image !== undefined ? { image } : {}),
-      },
+      data: updatePayload,
     })
 
     return NextResponse.json({ success: true, data: updatedAsset })

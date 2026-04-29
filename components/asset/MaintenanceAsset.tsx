@@ -233,7 +233,11 @@ const getStatusText = (status: number) => {
   }
 }
 
+
+
+
 export function MaintenanceAsset({ data }: MaintenanceAssetProps) {
+  const [tableData, setTableData] = React.useState(data)
   const [open, setOpen] = React.useState(false)
   const [formData, setFormData] = React.useState<Omit<MaintenanceForm, 'attachment'>>({
     asset_serial: "",
@@ -249,9 +253,7 @@ export function MaintenanceAsset({ data }: MaintenanceAssetProps) {
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [pagination, setPagination] = React.useState({ pageIndex: 0, pageSize: 10 })
-  const [tableData, setTableData] = React.useState(data)
 
-  // Auto-update maintenance status when component mounts
   React.useEffect(() => {
     const autoUpdateMaintenanceStatus = async () => {
       try {
@@ -263,7 +265,6 @@ export function MaintenanceAsset({ data }: MaintenanceAssetProps) {
           const result = await response.json()
           if (result.updated > 0) {
             console.log(`Updated ${result.updated} maintenance record(s)`)
-            // Refresh table data
             window.location.reload()
           }
         }
@@ -275,43 +276,7 @@ export function MaintenanceAsset({ data }: MaintenanceAssetProps) {
     autoUpdateMaintenanceStatus()
   }, [])
 
-  const table = useReactTable({
-    data: tableData,
-    columns,
-    state: {
-      columnVisibility,
-      columnFilters,
-      sorting,
-      pagination,
-      globalFilter,
-    },
-    onColumnVisibilityChange: setColumnVisibility,
-    onColumnFiltersChange: setColumnFilters,
-    onSortingChange: setSorting,
-    onPaginationChange: setPagination,
-    onGlobalFilterChange: setGlobalFilter,
-    getCoreRowModel: getCoreRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    globalFilterFn: (row, filterValue) => {
-      const search = String(filterValue).toLowerCase()
-      const searchableFields = [
-        row.original.asset_serial,
-        row.original.name,
-        row.original.category?.category_name,
-        row.original.location?.location_name,
-        row.original.condition,
-        row.original.maintenance?.[0]?.date_end,
-        row.original.maintenance?.[0]?.status_maintain,
-      ]
-      return searchableFields
-        .map((value) => String(value ?? "").toLowerCase())
-        .some((value) => value.includes(search))
-    },
-  })
-
-  const handleSubmit = async (event: React.FormEvent) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     try {
       setLoading(true)
@@ -359,7 +324,6 @@ export function MaintenanceAsset({ data }: MaintenanceAssetProps) {
     }
   }
 
-  // Handle manual mark as done
   const handleMarkAsDone = async (maintenance_id: string) => {
     try {
       const response = await fetch("/api/asset/maintenance", {
@@ -399,8 +363,8 @@ export function MaintenanceAsset({ data }: MaintenanceAssetProps) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          maintenance_id: maintenance_id,
-          asset_serial: asset_serial,
+          maintenance_id,
+          asset_serial,
         }),
       })
 
@@ -411,8 +375,6 @@ export function MaintenanceAsset({ data }: MaintenanceAssetProps) {
       }
 
       toast.success("Asset deleted successfully")
-
-      // Refresh page untuk update data terbaru
       window.location.reload()
     } catch (error) {
       console.error("Error deleting asset:", error)
@@ -420,18 +382,169 @@ export function MaintenanceAsset({ data }: MaintenanceAssetProps) {
     }
   }
 
-
+  const table = useReactTable({
+    data: tableData,
+    columns,
+    state: {
+      columnVisibility,
+      columnFilters,
+      sorting,
+      pagination,
+      globalFilter,
+    },
+    onColumnVisibilityChange: setColumnVisibility,
+    onColumnFiltersChange: setColumnFilters,
+    onSortingChange: setSorting,
+    onPaginationChange: setPagination,
+    onGlobalFilterChange: setGlobalFilter,
+    getCoreRowModel: getCoreRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    globalFilterFn: (row, filterValue) => {
+      const search = String(filterValue).toLowerCase()
+      const searchableFields = [
+        row.original.asset_serial,
+        row.original.name,
+        row.original.category?.category_name,
+        row.original.location?.location_name,
+        row.original.condition,
+        row.original.maintenance?.[0]?.date_end,
+        row.original.maintenance?.[0]?.status_maintain,
+      ]
+      return searchableFields
+        .map((value) => String(value ?? "").toLowerCase())
+        .some((value) => value.includes(search))
+    },
+  })
 
   // Make function available globally for column cell
   React.useEffect(() => {
-    (window as any).handleMarkAsDone = handleMarkAsDone
-  }
-    , [])
-  React.useEffect(() => {
-    (window as any).handleDeleteMaintenance = handleDeleteMaintenance
-  }
-    , [])
+    ; (window as any).handleMarkAsDone = handleMarkAsDone
+      ; (window as any).handleDeleteMaintenance = handleDeleteMaintenance
+  }, [handleMarkAsDone, handleDeleteMaintenance])
 
+  const MaintenanceForm = () => (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div>
+        <Label htmlFor="asset_serial">Asset Serial</Label>
+        <Input
+          id="asset_serial"
+          type="text"
+          value={formData.asset_serial}
+          onChange={(e) =>
+            setFormData({
+              ...formData,
+              asset_serial: e.target.value,
+            })
+          }
+          placeholder="Enter asset serial"
+        />
+      </div>
+
+      <div>
+        <Label htmlFor="condition">Condition</Label>
+        <Select
+          value={String(formData.condition)}
+          onValueChange={(value) =>
+            setFormData({
+              ...formData,
+              condition: parseInt(value),
+            })
+          }
+        >
+          <SelectTrigger id="condition">
+            <SelectValue placeholder="Select condition" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="1">Poor</SelectItem>
+            <SelectItem value="2">Okay</SelectItem>
+            <SelectItem value="3">Good</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div>
+        <Label htmlFor="status_maintain">Maintenance Status</Label>
+        <Select
+          value={String(formData.status_maintain)}
+          onValueChange={(value) =>
+            setFormData({
+              ...formData,
+              status_maintain: parseInt(value),
+            })
+          }
+        >
+          <SelectTrigger id="status_maintain">
+            <SelectValue placeholder="Select maintenance status" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="1">On Process</SelectItem>
+            <SelectItem value="2">Done</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div>
+        <Label htmlFor="note">Note</Label>
+        <Textarea
+          id="note"
+          value={formData.note}
+          onChange={(e) =>
+            setFormData({
+              ...formData,
+              note: e.target.value,
+            })
+          }
+          placeholder="Enter maintenance note"
+        />
+      </div>
+
+      <div>
+        <Label htmlFor="date_end">Date End</Label>
+        <Input
+          id="date_end"
+          type="date"
+          value={formData.date_end}
+          onChange={(e) =>
+            setFormData({
+              ...formData,
+              date_end: e.target.value,
+            })
+          }
+        />
+      </div>
+
+      <div>
+        <Label htmlFor="attachment">Attachment (File Pendukung)</Label>
+        <Input
+          id="attachment"
+          type="file"
+          onChange={(e) => setAttachment(e.target.files?.[0])}
+          placeholder="Choose file"
+          accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+        />
+        {attachment && (
+          <p className="mt-2 text-sm text-muted-foreground">
+            Selected: {attachment.name}
+          </p>
+        )}
+      </div>
+
+      <div className="flex justify-end gap-2 pt-4">
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => setOpen(false)}
+        >
+          Cancel
+        </Button>
+        <Button type="submit" disabled={loading}>
+          {loading ? "Creating..." : "Create"}
+        </Button>
+      </div>
+    </form>
+  )
 
   return (
     <div className="w-full space-y-4">
@@ -483,127 +596,7 @@ export function MaintenanceAsset({ data }: MaintenanceAssetProps) {
               <DialogHeader>
                 <DialogTitle>Add Asset Maintenance</DialogTitle>
               </DialogHeader>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                  <Label htmlFor="asset_serial">Asset Serial</Label>
-                  <Input
-                    id="asset_serial"
-                    type="text"
-                    value={formData.asset_serial}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        asset_serial: e.target.value,
-                      })
-                    }
-                    placeholder="Enter asset serial"
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="condition">Condition</Label>
-                  <Select
-                    value={String(formData.condition)}
-                    onValueChange={(value) =>
-                      setFormData({
-                        ...formData,
-                        condition: parseInt(value),
-                      })
-                    }
-                  >
-                    <SelectTrigger id="condition">
-                      <SelectValue placeholder="Select condition" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="1">Poor</SelectItem>
-                      <SelectItem value="2">Okay</SelectItem>
-                      <SelectItem value="3">Good</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <Label htmlFor="status_maintain">Maintenance Status</Label>
-                  <Select
-                    value={String(formData.status_maintain)}
-                    onValueChange={(value) =>
-                      setFormData({
-                        ...formData,
-                        status_maintain: parseInt(value),
-                      })
-                    }
-                  >
-                    <SelectTrigger id="status_maintain">
-                      <SelectValue placeholder="Select maintenance status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="1">On Process</SelectItem>
-                      <SelectItem value="2">Done</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <Label htmlFor="note">Note</Label>
-                  <Textarea
-                    id="note"
-                    value={formData.note}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        note: e.target.value,
-                      })
-                    }
-                    placeholder="Enter maintenance note"
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="date_end">Date End</Label>
-                  <Input
-                    id="date_end"
-                    type="date"
-                    value={formData.date_end}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        date_end: e.target.value,
-                      })
-                    }
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="attachment">Attachment (File Pendukung)</Label>
-                  <Input
-                    id="attachment"
-                    type="file"
-                    onChange={(e) =>
-                      setAttachment(e.target.files?.[0])
-                    }
-                    placeholder="Choose file"
-                    accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
-                  />
-                  {attachment && (
-                    <p className="mt-2 text-sm text-muted-foreground">
-                      Selected: {attachment.name}
-                    </p>
-                  )}
-                </div>
-
-                <div className="flex justify-end gap-2 pt-4">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setOpen(false)}
-                  >
-                    Cancel
-                  </Button>
-                  <Button type="submit" disabled={loading}>
-                    {loading ? "Creating..." : "Create"}
-                  </Button>
-                </div>
-              </form>
+              <MaintenanceForm />
             </DialogContent>
           </Dialog>
         </div>

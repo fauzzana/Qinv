@@ -177,7 +177,7 @@ export async function PATCH(request: Request) {
     }
 
     const body = await request.json()
-    const { item_id, name, status, current_qty, min_qty } = body
+    const { item_id, name, status, category_id, location_id, current_qty, min_qty } = body
 
     if (!item_id) {
       return NextResponse.json(
@@ -186,12 +186,16 @@ export async function PATCH(request: Request) {
       )
     }
 
+    const updatePayload: Record<string, any> = {
+      ...(name !== undefined ? { name } : {}),
+      ...(status !== undefined ? { status: Number(status) } : {}),
+      ...(category_id !== undefined ? { category_id } : {}),
+      ...(location_id !== undefined ? { location_id } : {}),
+    }
+
     const updatedItem = await prisma.item.update({
       where: { item_id },
-      data: {
-        ...(name !== undefined ? { name } : {}),
-        ...(status !== undefined ? { status: Number(status) } : {}),
-      },
+      data: updatePayload,
     })
 
     if (current_qty !== undefined && !Number.isNaN(Number(current_qty))) {

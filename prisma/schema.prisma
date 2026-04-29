@@ -12,6 +12,7 @@ enum Role {
   ADMIN
   MANAGEMENT
   STAFF
+  GUEST
 }
 
 model User {
@@ -21,7 +22,7 @@ model User {
   emailVerified DateTime?
   image         String?
 
-  role      Role     @default(STAFF)
+  role      Role     @default(GUEST)
 
   userId    String?
   depart_id Int?
@@ -119,8 +120,8 @@ model Asset {
   name          String
   description   String
   qty           Int
-  purcase_date  DateTime
-  purcase_price Int?
+  purchase_date  DateTime
+  purchase_price Int?
   status        Int
   qr_code_path  String
   image         String?

@@ -129,9 +129,9 @@ export function RetrivalCard({ item, defaultName, defaultDepartment, onSubmit }:
       <img
         src={imageSrc}
         alt={item.name}
-        className="relative z-20 aspect-video w-full object-cover brightness-60 grayscale dark:brightness-40"
+        className="relative z-20 aspect-video w-full object-cover brightness-60"
       />
-      <div className="space-y-3 p-4">
+      <div className="space-y-2 p-3">
         <div className="flex items-center justify-between gap-3">
           <CardAction>
             <Badge variant="secondary">{statusText}</Badge>
@@ -153,7 +153,7 @@ export function RetrivalCard({ item, defaultName, defaultDepartment, onSubmit }:
         </CardDescription>
       </div>
 
-      <CardFooter className="flex flex-col gap-3 p-4">
+      <CardFooter className="flex flex-col gap-2 p-3">
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
             <Button className="w-full cursor-pointer">Retrival</Button>
@@ -295,9 +295,9 @@ export function StoreCard({ item, defaultName, defaultDepartment, onSubmit }: St
       <img
         src={imageSrc}
         alt={item.name}
-        className="relative z-20 aspect-video w-full object-cover brightness-60 grayscale dark:brightness-40"
+        className="relative z-20 aspect-video w-full object-cover brightness-60"
       />
-      <div className="space-y-3 p-4">
+      <div className="space-y-2 p-3">
         <div className="flex items-center justify-between gap-3">
           <CardAction>
             <Badge variant="secondary">{statusText}</Badge>
@@ -320,7 +320,7 @@ export function StoreCard({ item, defaultName, defaultDepartment, onSubmit }: St
         </CardDescription>
       </div>
 
-      <CardFooter className="flex flex-col gap-3 p-4">
+      <CardFooter className="flex flex-col gap-2 p-3">
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
             <Button className="w-full cursor-pointer">Add</Button>

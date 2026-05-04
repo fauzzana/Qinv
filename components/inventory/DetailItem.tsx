@@ -39,16 +39,8 @@ export type ItemCardProps = {
   image?: string
 }
 
-type DetailItemProps = {
+interface DetailItemProps {
   item: Item;
-  defaultName: string
-  defaultDepartment: string
-  onSubmit?: (payload: {
-    item: ItemCardProps
-    personName: string
-    department: string
-    quantity: number
-  }) => void
 }
 
 
@@ -87,15 +79,6 @@ export function DetailItem({ item }: DetailItemProps) {
     load()
   }, [])
 
-  const defaultName = profile.name ?? ""
-  const defaultDepartment = profile.department?.depart_name ?? "Umum"
-  const [personName, setPersonName] = useState(defaultName)
-  const [department, setDepartment] = useState(defaultDepartment)
-
-  useEffect(() => {
-    setPersonName(defaultName)
-    setDepartment(defaultDepartment)
-  }, [defaultName, defaultDepartment])
 
   const { performQr } = useItemActions(item)
   const [openQr, setOpenQr] = React.useState(false)
@@ -150,15 +133,15 @@ export function DetailItem({ item }: DetailItemProps) {
               label="Retrieval"
               action={false}
               itemId={item.item_id}
-              defaultName={defaultName}
-              defaultDepartment={defaultDepartment}
+              defaultName={profile.name ?? ""}
+              defaultDepartment={profile.department?.depart_name ?? "Umum"}
             />
             <TransactionButton
               label="Store"
               action={true}
               itemId={item.item_id}
-              defaultName={defaultName}
-              defaultDepartment={defaultDepartment}
+              defaultName={profile.name ?? ""}
+              defaultDepartment={profile.department?.depart_name ?? "Umum"}
             />
             <Button variant="outline" onClick={() => window.history.back()}>
               Back

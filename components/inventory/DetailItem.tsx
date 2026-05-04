@@ -6,9 +6,10 @@ import { Badge } from "@/components/ui/badge";
 import Image from "next/image";
 import { useItemActions } from "@/hooks/useItemActions"
 import { useReactToPrint } from "react-to-print";
-import { useRef } from "react";
+import { useRef, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Drawer, DrawerTrigger, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription, DrawerFooter, DrawerClose } from "@/components/ui/drawer"
+import { TransactionButton } from "@/components/inventory/button-transaction"
 
 interface Item {
   item_id: string;
@@ -28,11 +29,74 @@ interface Item {
   }[];
 }
 
-interface DetailItemProps {
-  item: Item;
+export type ItemCardProps = {
+  item_id: string
+  name: string
+  status: number
+  category?: { category_name: string }
+  location?: { location_name: string }
+  stockItems?: Array<{ current_qty: number }>
+  image?: string
 }
 
+type DetailItemProps = {
+  item: Item;
+  defaultName: string
+  defaultDepartment: string
+  onSubmit?: (payload: {
+    item: ItemCardProps
+    personName: string
+    department: string
+    quantity: number
+  }) => void
+}
+
+
+type Profile = {
+  name?: string | null
+  department?: { depart_name: string } | null
+}
+
+
 export function DetailItem({ item }: DetailItemProps) {
+  const [items, setItems] = useState<ItemCardProps[]>([])
+  const [profile, setProfile] = useState<Profile>({})
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const [itemsRes, profileRes] = await Promise.all([
+          fetch("/api/inventory/item"),
+          fetch("/api/user/profile"),
+        ])
+
+        if (itemsRes.ok) {
+          const itemsData = await itemsRes.json()
+          setItems(itemsData.data ?? [])
+        }
+
+        if (profileRes.ok) {
+          const profileData = await profileRes.json()
+          setProfile(profileData)
+        }
+      } catch (error) {
+        console.error("Gagal memuat data transaksi", error)
+      }
+    }
+
+    load()
+  }, [])
+
+  const defaultName = profile.name ?? ""
+  const defaultDepartment = profile.department?.depart_name ?? "Umum"
+  const [personName, setPersonName] = useState(defaultName)
+  const [department, setDepartment] = useState(defaultDepartment)
+
+  useEffect(() => {
+    setPersonName(defaultName)
+    setDepartment(defaultDepartment)
+  }, [defaultName, defaultDepartment])
+
   const { performQr } = useItemActions(item)
   const [openQr, setOpenQr] = React.useState(false)
   const qrRef = useRef<HTMLDivElement>(null)
@@ -80,8 +144,22 @@ export function DetailItem({ item }: DetailItemProps) {
             </Badge>
           </div>
         </CardContent>
-        <CardFooter className="bg-white flex justify-end">
+        <CardFooter className="bg-white flex">
           <div className="flex gap-2">
+            <TransactionButton
+              label="Retrieval"
+              action={false}
+              itemId={item.item_id}
+              defaultName={defaultName}
+              defaultDepartment={defaultDepartment}
+            />
+            <TransactionButton
+              label="Store"
+              action={true}
+              itemId={item.item_id}
+              defaultName={defaultName}
+              defaultDepartment={defaultDepartment}
+            />
             <Button variant="outline" onClick={() => window.history.back()}>
               Back
             </Button>

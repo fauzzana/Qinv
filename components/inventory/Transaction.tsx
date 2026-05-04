@@ -8,7 +8,7 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs"
-import { RetrivalCard, StoreCard, ItemCardProps } from "@/components/inventory/item-card"
+import { RetrievalCard, StoreCard, ItemCardProps } from "@/components/inventory/item-card"
 
 type Profile = {
   name?: string | null
@@ -97,7 +97,7 @@ export function Tab() {
               </div>
             ) : (
               items.map((item) => (
-                <RetrivalCard
+                <RetrievalCard
                   key={item.item_id}
                   item={item}
                   defaultName={defaultName}
